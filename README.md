@@ -63,13 +63,23 @@ sudo apt-get install docker-engine -y
 sudo service docker start
 ```
 
+You will need also to git clone this repository to your local machine with
+```
+git clone git@github.com:andre250/data-engineering-cases.git
+```
 ## Deployment
 
-After the docker is installed, it is necessary download the images of services on the server, they are:
+After the docker is installed and the repository is clonned, it is necessary download the images of services on the server, they are:
 
 - Standalone Spark Cluster;
 - Standalone Nifi Cluster;
 - Standalone Elasticsearch Cluster + Standalone Kibana Cluster;
+
+Before start executing our docker-compose please give data/nifi/conf access to your user
+
+```
+sudo chown youruser:youruser path/to/server/data-engineering-cases/data/nifi/conf
+```
 
 To automate the job, use the docker-compose.yml file at the root folder of the project, it already pull the images and configurate the persistance and the required network objects.
 
@@ -77,9 +87,8 @@ For more info about the docker-compose, check the documented file content.
 
 Move for the folder where is the docker-compose.yml file:
 ```
-cd /path/to/server/
+cd /path/to/server/data-engineering-cases
 ```
-
 Execute the server attached to the terminal:
 ```
 docker-compose up

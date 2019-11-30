@@ -42,15 +42,12 @@ services:
     depends_on: 
     - kibana
     volumes:
+    - ./data/inbox_elt:/opt/inbox_elt
     - ./data/inbox:/opt/inbox
     - ./scripts:/opt/scripts
     - ./schemas:/opt/schemas
     - ./data/datalake:/opt/data/datalake
     - ./data/nifi/nifi_state:/opt/nifi/nifi-current/state
-    - ./data/nifi/nifi_db:/opt/nifi/nifi-current/database_repository
-    - ./data/nifi/nifi_flowfile:/opt/nifi/nifi-current/flowfile_repository
-    - ./data/nifi/nifi_content:/opt/nifi/nifi-current/content_repository
-    - ./data/nifi/nifi_provenance:/opt/nifi/nifi-current/provenance_repository
     - ./data/nifi/conf:/opt/nifi/nifi-current/conf 
     healthcheck:
       test: ["CMD", "curl", "-s", "-f", "http://localhost:8080/"]

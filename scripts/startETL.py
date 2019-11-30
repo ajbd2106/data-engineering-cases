@@ -37,4 +37,4 @@ df = sql.sql(
 # Create timestamp and save file as parquet to processed folder
 
 currentdate = datetime.now().strftime("%Y%m%d%H%M%s")
-df.coalesce(1).write.format("json").save("work/data/inbox/result_process"+currentdate")
+df.coalesce(1).write.format("json").save("work/data/inbox/result_process"+currentdate)

@@ -75,10 +75,12 @@ After the docker is installed and the repository is clonned, it is necessary dow
 - Standalone Nifi Cluster;
 - Standalone Elasticsearch Cluster + Standalone Kibana Cluster;
 
-Before start executing our docker-compose please give data/nifi/conf access to your user
+Before start executing our docker-compose please give project access to your user and group
 
 ```
-sudo chown youruser:youruser path/to/server/data-engineering-cases/data/nifi/conf
+sudo chown -R youruser:yourgroup path/to/server/data-engineering-cases
+example
+sudo chown -R grego:grego home/grego/projects/data-engineering-cases
 ```
 
 To automate the job, use the docker-compose.yml file at the root folder of the project, it already pull the images and configurate the persistance and the required network objects.
@@ -125,7 +127,7 @@ Step-by-step to run the applications:
 
 * It will be execute the command to simulate a spark job submit to execute a script pyspark at the spark cluster.
 ```
-docker exec -it taxi_spark_1 python3 /home/jovyan/work/scripts/startETL.py
+docker exec -it dataengineeringcases_spark_1 python3 /home/jovyan/work/scripts/startETL.py
 ```
 
 * After finishing the processing, it will be possible to follow the file receiving and its routing at the NiFi UI: http://localhost:8080/nifi
@@ -152,7 +154,7 @@ curl -d '{"vendor_id":"CMT","pickup_datetime":"2019-11-21T18:51:11.767205+00:00"
 
 * It will be execute the command to simulate a spark job submit to execute a script pyspark at the spark cluster.
 ```
-docker exec -it taxi_spark_1 python3 /home/jovyan/work/scripts/startELT.py
+docker exec -it dataengineeringcases_spark_1 python3 /home/jovyan/work/scripts/startELT.py
 ```
 
 * After finishing the processing, it will be possible to follow the file receiving and its routing at the NiFi UI: http://localhost:8080/nifi

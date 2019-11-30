@@ -1,0 +1,70 @@
+---
+version: '3.2'
+services:
+  spark:
+    image: jupyter/pyspark-notebook
+    ports:
+      - "8888:8888"
+      - "4040-4080:4040-4080"
+    depends_on: 
+    - nifi
+    volumes:
+      - ./scripts:/home/jovyan/work/scripts/
+      - ./data:/home/jovyan/work/data/
+      - ./schemas:/home/jovyan/work/schemas/
+      - ./inbox:/home/inbox/
+      - ./data/inbox:/home/result/
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:8888"]
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+    - "4571:4571"
+    volumes:
+      - ./data/es:/var/lib/localstack
+    environment:
+      SERVICES: elasticsearch, es
+      DEFAULT_REGION: sa-east-1
+      HOSTNAME_EXTERNAL: localstack
+      DATA_DIR: /var/lib/localstack
+      USE_SSL: 'false'
+    healthcheck:
+      test: ["CMD", "curl","-s" ,"-f", "http://localhost:4571/_cat/health"]
+  nifi:
+    image: apache/nifi:1.10.0
+    environment:
+      JVM_OPTS: "-Xmx1g -Xms4g -XX:MaxPermSize=4g"
+    links:
+    - localstack
+    ports: 
+    - 8080:8080
+    - 8989:8989
+    depends_on: 
+    - kibana
+    volumes:
+    - ./data/inbox:/opt/inbox
+    - ./scripts:/opt/scripts
+    - ./schemas:/opt/schemas
+    - ./data/datalake:/opt/data/datalake
+    - ./data/nifi/nifi_state:/opt/nifi/nifi-current/state
+    - ./data/nifi/nifi_db:/opt/nifi/nifi-current/database_repository
+    - ./data/nifi/nifi_flowfile:/opt/nifi/nifi-current/flowfile_repository
+    - ./data/nifi/nifi_content:/opt/nifi/nifi-current/content_repository
+    - ./data/nifi/nifi_provenance:/opt/nifi/nifi-current/provenance_repository
+    - ./data/nifi/conf:/opt/nifi/nifi-current/conf 
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:8080/"]
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.2.0
+    depends_on: 
+    - localstack
+    ports:
+    - 5601:5601
+    links:
+    - localstack
+    environment:
+      ELASTICSEARCH_URL: http://localstack:4571
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:5601/"]

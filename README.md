@@ -1,56 +1,58 @@
 # Data Engineering Test
 
-Esse projeto foi desenvolvido para a realização de um teste de habilidades na matéria de Engenharia de dados.
+This project was developed for a skill test at the Data Engineering subject.
 
 ## Getting Started
 
-O objetivo desse projeto é solucionar através de uma arquitetura (infra-as-a-code) escalável na núvem AWS o consumo de grandes quantidades de dados, tanto em seu formato batch quanto em streaming.
+The project objectives is to solve a case with the ingestion of a large amount of data, in batch and streaming format, through an scalable architecture (infra-as-a-code) on AWS cloud.  
 
-Alguns desafios do projeto se encontram em:
+Some challenges that the project faces:
 
-Data cleaning em arquivos auxiliares.
-Data enrichment em dados de lote e dados streaming.
-Data manipulation para adicionar novos dados que serão utilizados em análises posteriores.
-Data visualization em real-time e report-oriented
+Data cleaning;
+Data enrichment in batch and streaming;
+Data manipulation to add new data to be used in later analysis;
+Data visualization in real-time and report-oriented.
 
-Arquitetura focada em AWS:
+Architecture focused in AWS:
 
 ![Cloud Architecture](architecture.jpg "Cloud Architecture")
 
-Para simular essa arquitetura localmente iremos utilizar principalmente o docker.
+To simulate this architecture locally, it was used mainly docker. 
 
-#### Batch use case (ETL)
-- Os arquivos para o consumo se encontram na pasta /inbox
-- Ao iniciar o projeto iremos simular um spark job submit para o cluster de spark que dará inicio ao processo.
-- Após passar pelo processo de ETL ele será enviado para a pasta /data/inbox que é monitorada pelo Nifi.
-- Ao receber um arquivo o Nifi inicia o processo de archive para o datalake do arquivo tratado (/data/datalake)
-- Paralelamente o Nifi envia o lote para ser indexado no elasticsearch no indíce data tipo doc.
-- Após finalização do processo pode se utilizar tanto o Jupyter consultando diretamente os arquivos no datalake quanto o Kibana para explorar os dados no datalake.
+#### Batch use case (ETL - Extract, Transform, Load)
+- The archives for ingestion need to be found at '/inbox' folder;
+- When starting the project it will simulate a spark job submit to the spark cluster to begin the process;
+- After pass by an ETL process, it will be sendes to the '/data/inbox' folder that is monitored by NiFi;
+- When the file is received, NiFi starts the process to feed the datalake with treated file ('data/datalake');
+- In parallel, NiFi sends the batch to be indexed on ElasticSearch, at data index, doc type; 
+- After the process is finished, it can be used both Jupyter, consulting directly the files in datalake using SparkQL to execute the querys emulating Athena and Kibana to explore and visualize the data in a dashboard and export charts and information to the report HTML;  
+
 #### Stream use case
-- É enviado um post para a API.
-- O nifi recepciona o evento em formato de flowfile
-- O nifi enriquece os dados do evento com os dados auxiliares disponibilizado
-- O nifi indexa o evento tornando-o disponível para explorações no dashboard realtime do kibana
+- A post is sended to an API;
+- NiFi receives this event in a flowfile format;
+- NiFi enrichs the event data with some auxiliar data provided;
+- NiFi indexes the event, making it available to data exploration in a real-time dashboard at Kibana.
 
-### Extra use case (ELT)
-Existe um outro caso onde a informação precisa ser consumida e e já estar disponível para exploração no menor tempo de disponibilidade possível. Seria essa utilizando a metodologia ELT. Porém com o risco de fazer a transformação via alguma ferramenta de exploração.
-- Recepção dos arquivos pelo S3
-- Consumo dos arquivos pelo Nifi
-- Conversão dos arquivos de JSON para Parquet da forma com que eles chegam
-- Disponibilização dos dados no S3 na zona processada
-- Transformação dos dados utilizando Athena
-- Extração da informação
+### Extra use case (ELT - Extract, Load, Transform)
+There is another case, where the information needs to be consumed and be available for data analysis and exploration as soon as possible. The methodology for this is an ELT (Extract, Load, Transform). It has an additional risk, because the transformation would be made by a data exploration tool, by hand.
+- Files ingestion by S3;
+- Files ingestion by a monitoring NiFi process;
+- Nifi will convert JSON to Parquet, the way they arrived (raw);
+- Transfer the data in S3, at the processed zone;
+- Processed zone on S3 can be cataloged with AWS Glue and consumed by AWS Athena;
+- Use AWS Athena queries to manipulate the raw data and export the results as CSV.
+- It is important to freeze here that there are a lot of data visualization tools that can be also connect in Athena via JDBC and use it as data source to generate the report needed. But i do not choose this option because the report must be a local HTML file.
 
 ### Prerequisites
 
-Para a replicação bem sucedida desse projeto é necessário possuir alguns requisitos instalados em seus sistema operacional linux.
+For the successful replication of this project, some requirements must be installed on your Linux operational system.
 
-Para esse tutorial estarei utilizando um distribuição do Debian. Linux Mint
-Caso o sistema operacional seja outro por favor siga esse tutorial: 
+For this tutorial, it was used a Debian/Ubuntu distribution: Linux Mint.
+If it is another operational system, please follow this tutorial:  
 
 https://runnable.com/docker/install-docker-on-linux
 
-Instalando o docker
+Installing docker
 ```
 sudo apt-get update -y && sudo apt-get install -y linux-image-extra-$(uname -r)
 ```
@@ -63,40 +65,42 @@ sudo service docker start
 
 ## Deployment
 
-Após ter o docker instalado é necessário baixar as imagens dos serviços existentes no servidor, são eles:
+After the docker is installed, it is necessary download the images of services on the server, they are:
 
-Standalone Spark Cluster
-Standalone Nifi Cluster
-Standalone Elasticsearch Cluster + Standalone Kibana Cluster
+- Standalone Spark Cluster;
+- Standalone Nifi Cluster;
+- Standalone Elasticsearch Cluster + Standalone Kibana Cluster;
 
-Para automatizar o trabalho utilizar o arquivo docker-compose.yml na raiz do projeto, ele já faz o pull das imagens e configura a persistência e os objetos de rede necessários.
+To automate the job, use the docker-compose.yml file at the root folder of the project, it already pull the images and configurate the persistance and the required network objects.
 
-Para maiores informações sobre o docker-compose verificar o conteúdo documentado do arquivo.
+For more info about the docker-compose, check the documented file content.
 
-Mover para a pasta onde está o arquivo docker-compose.yml 
+Move for the folder where is the docker-compose.yml file:
 ```
-cd /path/para/servidor/
+cd /path/to/server/
 ```
 
-Executar o servidor vinculado ao terminal
+Execute the server attached to the terminal:
 ```
 docker-compose up
 ```
 
-Executar o servidor em background
+Execute the server in background:
 ```
 docker-compose up -d
 ```
 
-É importante ressaltar aqui que alguns serviços podem demorar alguns minutos para inicializar.
-Por isso montei um shell script para verificar se os sistemas estiverem online.
+It is importante highlight that some services may take some minutes to initialize.
+That's why i create a shell script to check if the systems are online.
+
+Run on terminal. You must be at the root folder of the project.
 ```
 ./healthcheck.sh
 ```
 
 ## Services
 
-Após o serviço ter inicializado completamente você poderá navegar pelas UI's dos serviços utilizados
+After the service has completely initialized, you can navigate through US's of the used services.
 
 Nifi UI - http://localhost:8080/nifi
 Kibana UI - http://localhost:5601
@@ -104,41 +108,54 @@ Elasticsearch Server - http://localhost:4571/_cat/health
 
 ## Running
 
-Passo a passo para rodar as aplicações
+Step-by-step to run the applications:
 
 ### Batch Use Case
 
-* Importar os arquivos que devem ser processado para a pasta /inbox na raiz do projeto.
-* Iremos executar o comando que irá simular um spark job submit para executar um script pyspark no cluster de spark.
-```
-docker exec -it taxi_spark_1 python3 /home/jovyan/work/scripts/data_preparation.py
-```
-* Após o término do processamento você poderá acompanhar o recebimento do arquivo e seu roteamento na UI do Nifi. http://localhost:8080/nifi
-* Após ser consumido e arquivado pelo Nifi ele irá splitar os registros em blocos de 5.000 para não sobrecarregar o Elasticsearch e iniciará o processo de indexação. Nome do processor:  "Batch - Index on Elasticsearch"
-* Após ou durante a conclusão de todos as splits parts, o usuário já poderá visualizar o Dashboard Geral com as informações do dataset: http://localhost:5601/app/kibana#/dashboard/713493f0-1192-11ea-8ba2-f74df6efb357
+* Import the files that need to be processed to the folder '/inbox', at the root folder of the project.
 
-PS: Importante ressaltar que o processo de ingestão pode demorar alguns minutos pois depende da memória da JVM a qual eu deixei configurada para usar no máximo 512 MB. Caso haja interesse de fazer um fine-tunning, vou descrever em outra sessão como fazer a alteração.
+* It will be execute the command to simulate a spark job submit to execute a script pyspark at the spark cluster.
+```
+docker exec -it taxi_spark_1 python3 /home/jovyan/work/scripts/startETL.py
+```
+
+* After finishing the processing, it will be possible to follow the file receiving and its routing at the NiFi UI: http://localhost:8080/nifi
+* After being consumed and archived by NiFi, it will split the records in blocks of 5.000 to avoid overload the Elasticsearch and it will begin the indexing process. Processor name: Batch - Index on Elasticsearch"
+* After (or during) the conclusion of all split parts, the user can visualize the "Dashboard Geral", with the dataset information: http://localhost:5601/app/kibana#/dashboard/713493f0-1192-11ea-8ba2-f74df6efb357
+
+PS: It is important to highlight that the ingestion process may take a few minutes, because it depends on the JVM memory, witch was configured to be used at maximum of 512 MB, because i have a low memory machine =). If it exists an interest on making a fine-tunning, it should be changed at the service configuration. (nifi-bootstrap.config)
+
 
 ### Stream Use Case
-* A inicialização do servidor já disponibiliza uma API REST aberta apenas para o metódo Post na porta 8989 no endpoint http://localhost:8989/taxiStream.
-* Para acompanhar em real-time acesse a url do dashboard em tempo real: http://localhost:5601/app/kibana#/dashboard/72884a60-1211-11ea-adf4-af3007798d61
-PS: Esse dashboard está filtrando apenas o mês vigente, por esse motivo o POST abaixo deve ter o pickup_datetime referente ao mês atual. Ou deve ser atualizado no date picker do kibana. =) 
-* O usuário deverá fazer um post nesse endpoint.
+* The initialization of the server, provides an open REST API only for the post method, at door 8989 of the endpoint: http://localhost:8989/taxiStream.
+* To follow in real-time, access the url of the Dashboard: http://localhost:5601/app/kibana#/dashboard/72884a60-1211-11ea-adf4-af3007798d61
+
+PS: This Dashboard is filtering only the current month. For this reason, the POST bellow must have a pickup_datetime referent to the current month. Or the date picker of Kibana must be updated. =)
+
+* The user must make a post at this endpoint
 ```
 curl -d '{"vendor_id":"CMT","pickup_datetime":"2019-11-21T18:51:11.767205+00:00","dropoff_datetime":"2019-11-21T18:57:09.433767+00:00","passenger_count":2,"trip_distance":0.8,"pickup_longitude":-74.004114,"pickup_latitude":40.74295,"rate_code":null,"store_and_fwd_flag":null,"dropoff_longitude":-73.994712,"dropoff_latitude":40.74795,"payment_type":"Cash","fare_amount":5.4,"surcharge":0,"tip_amount":0,"tolls_amount":0,"total_amount":5.4}' -H "Content-Type: application/json" -X POST http://localhost:8989/taxiStream
 ```
-* Acompanhar no dashboard a atualização de dados que está com o default de refresh de 10 segundos.
 
-
+* Follow the data update at the dashboard, with a refresh default of 10 seconds.
 ### Extra Use Case
+* Import the files that need to be processed to the folder '/inbox_elt', at the root folder of the project.
 
+* It will be execute the command to simulate a spark job submit to execute a script pyspark at the spark cluster.
+```
+docker exec -it taxi_spark_1 python3 /home/jovyan/work/scripts/startELT.py
+```
+
+* After finishing the processing, it will be possible to follow the file receiving and its routing at the NiFi UI: http://localhost:8080/nifi
+
+* The file was successfully converted to Parquet and now can be accessible via Jupyter Notebook with SparkQL or with AWS Athena.
 
 ## Analysis
 
-Os resultados das análises estão no arquivo analysis.html na raiz do projeto. 
-Os códigos de spark utilizados para manipular o dataset estão em scripts/data_preparation
-Os gráficos e o mapa foram gerados utilizando o Kibana
-O HTML analysis foi criado utilizando o draw.io
+The analysis results are ate the analysis.html at the root folder of the project.
+The spark codes used to manipulate the dataset are at scripts/startETL.py
+The numbers, charts and the map was generated by using Kibana.
+The HTML storytelling was made by myself! But there are a identical visualizations avaiable at Kibana dashboards. http://localhost:5601/app/kibana#/dashboard/713493f0-1192-11ea-8ba2-f74df6efb357
 
 ## Built With
 

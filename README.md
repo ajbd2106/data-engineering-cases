@@ -41,7 +41,7 @@ There is another case, where the information needs to be consumed and be availab
 - Transfer the data in S3, at the processed zone;
 - Processed zone on S3 can be cataloged with AWS Glue and consumed by AWS Athena;
 - Use AWS Athena queries to manipulate the raw data and export the results as CSV.
-- It is important to freeze here that there are a lot of data visualization tools that can be also connect in Athena via JDBC and use it as data source to generate the report needed. But i do not choose this option because the report must be a local HTML file.
+- It is important to note here that there are a lot of data visualization tools that can be also connect in Athena via JDBC and use it as data source to generate the report needed. But i do not choose this option because the report must be a local HTML file.
 
 ### Prerequisites
 
